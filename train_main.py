@@ -39,4 +39,6 @@ for i in range(config.epochs):
 
         batch_data = imgloader.read_data(batch_paths, config.image_size)
 
-        acc, l = sess.run([accuracy, loss], feed_dict={model.x: batch_data, model.y_:batch_labels, model.keep_prob:0.5})
+        acc, l = sess.run([accuracy, loss], feed_dict={model.x: batch_data,
+                                                       model.y_:batch_labels,
+                                                       model.keep_prob:0.5})
