@@ -1,2 +1,4 @@
 characters/
 test/
+helper/*.pyc
+config/*.pyc
