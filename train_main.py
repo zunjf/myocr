@@ -3,6 +3,7 @@ from helper import img_loader as imgloader
 from helper import model_ocr as model
 import numpy as np
 import config.default as config
+import random
 
 data_train_val_dir = 'characters' # directory data
 
@@ -12,6 +13,10 @@ imgtrain_list, lbltrain_list, imgval_list, lblval_list = imgloader.get_image_and
 onehot = np.zeros((len(imgtrain_list), config.n_classes))
 onehot[np.arange(len(imgtrain_list)), lbltrain_list] = 1
 lbltrain_list = onehot
+
+combined = list(zip(imgtrain_list, lbltrain_list))
+random.shuffle(combined)
+imgtrain_list, lbltrain_list = zip(*combined)
 
 onehot = np.zeros((len(imgval_list), config.n_classes))
 onehot[np.arange(len(imgval_list)), lblval_list] = 1
