@@ -10,13 +10,13 @@ dropout = 0.75
 # Store layers weight & bias
 weights = {
            # 5x5, 1 input (channel), 32 outputs
-           'wc1' : tf.Variable(tf.random_normal([5,5,1,32])),
+           'wc1' : tf.Variable(tf.random_normal([5,5,3,32])),
 
            # 5x5 32 input (channel), 64 outputs
            'wc2' : tf.Variable(tf.random_normal([5,5,32,64])),
 
            # fully connected
-           'wd1' : tf.Variable(tf.random_normal([7*7*64, 1024])),
+           'wd1' : tf.Variable(tf.random_normal([6*6*64, 1024])),
 
            # 1024 inputs, 10 outpus (class prediction)
            'out' : tf.Variable(tf.random_normal([1024, n_classes]))

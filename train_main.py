@@ -38,7 +38,10 @@ for i in range(config.epochs):
         batch_labels = lbltrain_list[offset:(offset + config.batch_size)]
 
         batch_data = imgloader.read_data(batch_paths, config.image_size)
+        #print np.array(batch_data).shape
 
         acc, l = sess.run([accuracy, loss], feed_dict={model.x: batch_data,
                                                        model.y_:batch_labels,
                                                        model.keep_prob:0.5})
+
+        print("epoch %d: %d/%d - loss: %.3f - acc: %.3f" % (i, step, steps, l, acc))
