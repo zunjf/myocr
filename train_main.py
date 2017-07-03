@@ -14,10 +14,12 @@ onehot = np.zeros((len(imgtrain_list), config.n_classes))
 onehot[np.arange(len(imgtrain_list)), lbltrain_list] = 1
 lbltrain_list = onehot
 
+# Randomize training data
 combined = list(zip(imgtrain_list, lbltrain_list))
 random.shuffle(combined)
 imgtrain_list, lbltrain_list = zip(*combined)
 
+# Labeling
 onehot = np.zeros((len(imgval_list), config.n_classes))
 onehot[np.arange(len(imgval_list)), lblval_list] = 1
 lblval_list = onehot
@@ -26,11 +28,16 @@ sess = tf.InteractiveSession()
 y = tf.nn.softmax(model.logits)
 saver = tf.train.Saver()
 
+# Cross Entropy and accuracy
 cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=model.logits, labels=model.y_)
 loss = tf.reduce_mean(cross_entropy)
 train_step = tf.train.AdamOptimizer(1e-4).minimize(loss)
 correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(model.y_, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+
+# Tensorboard
+merged = tf.summary.merge_all()
+train_writer = tf.summary.FileWriter('train_board', sess.graph)
 
 sess.run(tf.global_variables_initializer())
 sess.run(tf.local_variables_initializer())
