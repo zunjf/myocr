@@ -42,6 +42,7 @@ train_writer = tf.summary.FileWriter('train_board', sess.graph)
 sess.run(tf.global_variables_initializer())
 sess.run(tf.local_variables_initializer())
 
+itr = 0
 for i in range(config.epochs):
     steps = int(len(imgtrain_list) // config.batch_size)
     for step in xrange(steps):
@@ -52,8 +53,10 @@ for i in range(config.epochs):
         batch_data = imgloader.read_data(batch_paths, config.image_size)
         #print np.array(batch_data).shape
 
-        acc, l = sess.run([accuracy, loss], feed_dict={model.x: batch_data,
+        acc, l, sum_merged = sess.run([accuracy, loss, merged], feed_dict={model.x: batch_data,
                                                        model.y_:batch_labels,
                                                        model.keep_prob:0.5})
 
+        itr +=1
+        train_writer.add_summary(sum_merged, itr)
         print("epoch %d: %d/%d - loss: %.3f - acc: %.3f" % (i, step, steps, l, acc))
