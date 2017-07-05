@@ -2,3 +2,4 @@ characters/
 test/
 helper/*.pyc
 config/*.pyc
+train_board/
