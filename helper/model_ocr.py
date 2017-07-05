@@ -7,7 +7,7 @@ keep_prob = tf.placeholder(tf.float32)
 
 # Convolutional layer
 print x.get_shape()
-conv1 = conv2d(x, config.weights['wc1'], config.biases['bc1'])
+conv1 = conv2d(x, config.weights['wc1'], config.biases['bc1'], 1, 'conv1', True)
 
 # Max Pooling (down-sampling)
 print conv1.get_shape()
@@ -15,7 +15,7 @@ conv1 = maxpool2d(conv1, k=2)
 print conv1.get_shape()
 
 # Convolutional layer
-conv2 = conv2d(conv1, config.weights['wc2'], config.biases['bc2'])
+conv2 = conv2d(conv1, config.weights['wc2'], config.biases['bc2'], 1, 'conv2', True)
 
 # Max Pooling (down-sampling)
 print conv2.get_shape()
@@ -33,4 +33,3 @@ fc1 = tf.nn.relu(fc1)
 fc1 = tf.nn.dropout(fc1, config.dropout)
 
 logits = tf.add(tf.matmul(fc1, config.weights['out']), config.biases['out'])
-tf.summary.histogram('pre_activations', logits)

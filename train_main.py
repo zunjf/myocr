@@ -31,9 +31,14 @@ saver = tf.train.Saver()
 # Cross Entropy and accuracy
 cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=model.logits, labels=model.y_)
 loss = tf.reduce_mean(cross_entropy)
+
 train_step = tf.train.AdamOptimizer(1e-4).minimize(loss)
 correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(model.y_, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+
+# Summary
+tf.summary.scalar('cross_entropy', loss)
+tf.summary.scalar('accuracy', accuracy)
 
 # Tensorboard
 merged = tf.summary.merge_all()
