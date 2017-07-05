@@ -57,8 +57,7 @@ for i in range(config.epochs):
 
         batch_data = imgloader.read_data(batch_paths, config.image_size)
         #print np.array(batch_data).shape
-
-        acc, l, sum_merged = sess.run([accuracy, loss, merged], feed_dict={model.x: batch_data,
+        acc, l, _, sum_merged = sess.run([accuracy, loss, train_step, merged], feed_dict={model.x: batch_data,
                                                        model.y_:batch_labels,
                                                        model.keep_prob:0.5})
 
