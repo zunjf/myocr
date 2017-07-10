@@ -64,3 +64,7 @@ for i in range(config.epochs):
         itr +=1
         train_writer.add_summary(sum_merged, itr)
         print("epoch %d: %d/%d - loss: %.3f - acc: %.3f" % (i, step, steps, l, acc))
+
+saver.save(sess, "model/ocr_model_new")
+#test_data = imgloader.read_data(imgval_list[0:100], config.image_size)
+#print('test accuracy %g' % accuracy.eval(feed_dict={model.x: test_data, model.y_: lblval_list[0:100], model.keep_prob: 1.0}))
