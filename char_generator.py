@@ -47,7 +47,7 @@ def CharGenerator():
             for char in characters:
 
                 # Generate character in random location
-                for i in range(300):
+                for i in range(70):
 
                     # Convert the character into unicode
                     c = unicode(char, 'utf-8')
@@ -105,22 +105,24 @@ out_dir = 'characters/'
 background_colors = (66, 110, 244)
 
 # Character size
-font_sizes = (16, 18, 20)
+font_sizes = (8, 9, 10)
 
 # Image size
-image_size = 24
+image_size = 10
 
 # Numbers
-numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+#numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 # Small letters
 small_letters = ['a', 'b', 'c', 'd','e', 'f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 
 # Capital letters
-capital_letters = ["A", 'B', 'C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W', 'X','Y','Z']
+#capital_letters = ["A", 'B', 'C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W', 'X','Y','Z']
+capital_letters = ["F", "Q", "X", "Z"]
 
 # Select characters
-characters = numbers + small_letters + capital_letters
+#characters = numbers + small_letters + capital_letters
+characters = small_letters + capital_letters
 
 # Initialization
 Init()

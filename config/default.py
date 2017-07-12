@@ -4,7 +4,7 @@ import tensorflow as tf
 n_classes = 62
 epochs = 100
 batch_size = 16
-image_size = 24
+image_size = 10
 dropout = 0.75
 
 def weight_variable(shape):
@@ -24,7 +24,7 @@ weights = {
            'wc2' : weight_variable([5,5,32,64]),#tf.Variable(tf.random_normal([5,5,32,64])),
 
            # fully connected
-           'wd1' : weight_variable([6*6*64, 1024]),#tf.Variable(tf.random_normal([6*6*64, 1024])),
+           'wd1' : weight_variable([3*3*64, 1024]),#tf.Variable(tf.random_normal([6*6*64, 1024])),
 
            # 1024 inputs, 10 outpus (class prediction)
            'out' : weight_variable([1024, n_classes])#tf.Variable(tf.random_normal([1024, n_classes]))
