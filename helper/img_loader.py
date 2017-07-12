@@ -63,7 +63,7 @@ def get_dataset(paths):
             class_name = classes[i]
             chardir = os.path.join(path_exp, class_name)
             if os.path.isdir(chardir):
-                images = os.listdir(chardir)
+                images = os.listdir(chardir)[0:1000]
                 image_paths = [os.path.join(chardir, img) for img in images]
                 dataset.append(ImageClass(class_name, image_paths))
 
