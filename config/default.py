@@ -1,8 +1,8 @@
 import tensorflow as tf
 
 # Configuration
-n_classes = 62
-epochs = 100
+n_classes = 64
+epochs = 1
 batch_size = 16
 image_size = 10
 dropout = 0.75
