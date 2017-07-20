@@ -1,365 +1,52 @@
-import cv2
-import os
+import tensorflow as tf
+from helper import img_loader as imgloader
+from helper import model_ocr as model
 import numpy as np
-import pytesseract
-from PIL import Image
-def compute_hist(img=[],prj=0,h=0,w=0) :
-	x=0
-	y=0
-	freq=[]
-	if(prj==0) :
-		x=h
-		y=w
-	else :
-		x=w
-		y=h
-	freq = np.zeros((x))
-	for x1 in range (x) :
-
-			for y1 in range(y) :
-				if(prj==0) :
-					if(img[x1][y1] ==255) :
-						freq[x1]+=1
-				else :
-					if(img[y1][x1] ==0) :
-						freq[x1]+=1
-
-
-
-	if(prj==0) :
-			hist = np.zeros((h,w))
-			for x1 in range (x) :
-					for y1 in range( int( round(freq[x1]))) :
-								hist[x1][y1]=255
-	else :
-		hist = np.ones((h,w))
-		for x1 in range (x) :
-					y1=h-1
-					k=0
-					while(k<= round(freq[x1])) :
-						hist[y1][x1]=0
-						y1-=1
-						k+=1
-
-
-	return freq,hist
-
-
-def search_last(freq, start,h) :
-	i=start
-	while(freq[i] != h) :
-		if(i== len(freq)-1 ) :
-			break
-		else :
-			i+=1
-	return i
-
-def search_last1(freq, start,h) :
-	i=start
-	while(freq[i] != h) :
-		if(i==0 ) :
-			break
-		else :
-			i-=1
-	return i
-
-
-
-def crop_field() :
-	images=os.listdir('./Scrapped_n_scaled\\')
-	for j, im in enumerate (images) :
-		pth = "./Scrapped_n_scaled/"+str(im)
-
-		img = cv2.imread(pth)
-		h = img.shape[0]
-		w = img.shape[1]
-		roi = img[60:h-1,0:110]
-		path = "./output_field/"+im
-		img = cv2.imwrite(path,roi)
-		print(im)
-def compute_mean(prj) :
-	mean =0
-	i=0
-	while(i<len(prj)) :
-		mean +=prj[i]
-		i+=1
-
-	mean = mean/len(prj)
-	return mean
-
-def detect2(img) :
-	h_roi = img.shape[0]
-	w_roi =img.shape[1]
-	if(h_roi/5 >=1 and w_roi/5 >=1) :
-		h_roi/=5
-		w_roi/=5
-		img = cv2.resize(img,(int(round(w_roi)),int(round(h_roi))))
-
-	gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-	_,thresh = cv2.threshold(gray,127,255,cv2.THRESH_BINARY)
-	try:
-					text = pytesseract.image_to_string(Image.fromarray(thresh),config='-psm 10')
-					print(text)
-
-	except (UnicodeEncodeError,UnicodeDecodeError ) :
-						#print('image failed')
-						pass
-	#else:
-			#print("success")
-	finally:
-			pass
-
-
-
-def detect(img) :
-	pth = "detect.png"
-
-	h_roi = img.shape[0]
-	w_roi =img.shape[1]
-
-	if(h_roi/5 >=1 and w_roi/5 >=1) :
-		h_roi/=5
-		w_roi/=5
-		img = cv2.resize(img,(int(round(w_roi)),int(round(h_roi))))
-
-	gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-	_,thresh = cv2.threshold(gray,127,255,cv2.THRESH_BINARY)
-	cv2.imwrite(pth, thresh)
-	os.system("OCR_Test.exe")
-	#f = open("result.txt", "r").read()
-	f = open("result.txt", 'rb')
-	obj = f.read()
-
-	f.close()
-
-	f = open('result.txt', 'r+')
-	f.truncate()
-	f.close()
-	return obj
-
-def segment2 (name,mean, img, freq) :
-	stack_start = []
-	stack_end= []
-	i=0
-	x1=-1
-	x2=-1
-	h,w = img.shape[:2]
-	#print(freq)
-	while(i<len(freq)) :
-		if(freq[i]==h) :
-			if(x1==-1) :
-				x1=i
-			else :
-
-				x2=i+1
-		else :
-			if(i==0) :
-				x1=i
-				x2=i
-
-			if(x1!=-1 and x2!=-1) :
-				stack_start.append(x1)
-				stack_end.append(x2)
-			x1=-1
-			x2=-1
-
-		i+=1
-
-
-
-	#cv2.imshow(name,img)
-	#cv2.imshow(1000000)
-
-	return stack_start,stack_end
-
-def vertical(img, j,k) :
-	# Load the image
-	kernel = np.ones((3,3), np.uint8)
-	clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-
-	h_or = img.shape[0]
-	w_or = img.shape[1]
-
-	w_or*=5
-	h_or*=5
-	img = cv2.resize(img,(w_or,h_or))
-	img1 = cv2.resize(img,(w_or,h_or))
-
-
-
-
-	gray= cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-	gray = clahe.apply(gray)
-	gray = cv2.bilateralFilter(gray,10,97,75)
-
-	gray=cv2.morphologyEx(gray,cv2.MORPH_OPEN,kernel )
-
-
-	# Apply adaptive threshold
-	thresh = cv2.adaptiveThreshold(gray,255,1,1,11,2)
-
-
-	# apply some dilation and erosion to join the gaps
-
-	thresh = cv2.erode(thresh,None,iterations = 1)
-
-
-	x_proj_ori,histx =compute_hist(img=thresh,prj=1,h=h_or,w=w_or)
-	y_proj_ori,histy =compute_hist(img=thresh,prj=0,h=h_or,w=w_or)
-
-
-	#cv2.imshow('histx',histx)
-	#cv2.imshow('histy',histy)
-	#cv2.waitKey(1000000)
-
-	mean = compute_mean(x_proj_ori)
-
-	# Finally show the image
-	img2 = img1
-	stack_start,stack_end = segment2("ori",mean, img1, x_proj_ori)
-	word_queue = []
-	i=1
-	while(i<len(stack_end)) :
-
-		roi=img[0:h_or,stack_end[i-1]:stack_start[i]]
-
-		h_roi = int(round(roi.shape[0]))
-		w_roi = int(round(roi.shape[1]))
-		if(h_roi>=1 and w_roi>=1) :
-			 word_queue.append(detect(roi))
-
-		if(i==len(stack_end)-1) :
-				Li = search_last(x_proj_ori, stack_end[i],h_or)
-
-				roi=img[0:h_or,stack_end[i]:Li]
-				h_roi = int(round(roi.shape[0]))
-				w_roi = int(round(roi.shape[1]))
-				if(h_roi>=1 and w_roi>=1) :
-					word_queue.append(detect(roi))
-					cv2.rectangle(img,(stack_end[i],0),(Li,h_or),(0,255,0),2)
-		cv2.rectangle(img,(stack_end[i-1],0),(stack_start[i],h_or),(0,255,0),2)
-		i+=1
-
-
-	i=0
-	while (i<len(word_queue)):
-		print(word_queue[i])
-
-	print()
-
-
-
-	#img11 = segment(mean, img1, x_proj)
-	#sys.exit()
-def segment3 (name,mean, img, freq,w_or,k) :
-	stack_start = []
-	stack_end= []
-	i=0
-	x1=-1
-	x2=-1
-	h,w = img.shape[:2]
-	w = w_or
-	#print(freq)
-	while(i<len(freq)) :
-		if(freq[i]==0) :
-			if(x1==-1) :
-				x1=i
-			else :
-
-				x2=i+1
-		else :
-			if(i==0) :
-				x1=i
-				x2=i
-
-			if(x1!=-1 and x2!=-1) :
-				stack_start.append(x1)
-				stack_end.append(x2)
-			x1=-1
-			x2=-1
-
-		i+=1
-
-
-	i=1
-	while(i<len(stack_end)) :
-		#cv2.rectangle(img,(0,stack_end[i-1]-1),(w-3,stack_start[i]+1),(0,255,0),2)
-		roi =  img[stack_end[i-1]-1:stack_start[i]+1, 0:w]
-		h_roi = roi.shape[0]
-		w_roi = roi.shape[1]
-		if(h_roi>0 and w_roi>0) :
-			vertical(roi, i,k)
-
-		if(i==len(stack_end)-1) :
-			Li = search_last(freq, stack_end[i],0)
-			roi =  img[stack_end[i]-1:Li+1, 0:w]
-			h_roi = roi.shape[0]
-			w_roi = roi.shape[1]
-			if(h_roi>0 and w_roi>0) :
-					vertical(roi, i+1,k)
-
-			#cv2.rectangle(img,(0,stack_end[i]-1),(w-3,Li+1),(0,255,0),2)
-
-		i+=1
-
-
-
-	return stack_start,stack_end
-
-def horizontal(pth,k) :
-	kernel = np.ones((3,3), np.uint8)
-	clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-	img = cv2.imread(pth)
-	h_or = img.shape[0]
-	w_or = img.shape[1]
-
-
-	img1 = img
-	gray= cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-
-	face_cascade = cv2.CascadeClassifier('haar/haarcascade_frontalface_alt.xml')
-	faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-	x1=0
-	for (x,y,w,h) in faces:
-		 #cv2.rectangle(img1,(x,y),(x+w,y+h),(255,0,0),2)
-		 x1=x
-	if(x1!=0) :
-		gray=gray[0:h_or,0:x1+1]
-		w_or = x1+1
-
-	#cv2.imshow('gray',gray)
-	#cv2.waitKey(1000000)
-	#gray = clahe.apply(gray)
-	gray = cv2.bilateralFilter(gray,10,97,75)
-	gray = cv2.bilateralFilter(gray,10,97,75)
-	gray = cv2.bilateralFilter(gray,10,97,75)
-	#gray = cv2.bilateralFilter(gray,10,97,75)
-
-
-	thresh = cv2.adaptiveThreshold(gray,255,1,1,11,2)
-
-
-
-
-
-
-	x_proj_ori,histx =compute_hist(img=thresh,prj=1,h=h_or,w=w_or)
-	if(x1!=0) :
-		i=search_last1(x_proj_ori, w_or-1,h_or)
-		thresh=thresh[0:h_or,0:i+1]
-		w_or=i+1
-
-	y_proj_ori,histy =compute_hist(img=thresh,prj=0,h=h_or,w=w_or)
-
-	mean = compute_mean(y_proj_ori)
-
-	stack_start1,stack_end1 = segment3("ori",mean, img1, y_proj_ori, w_or,k)
-	cv2.imshow('gray',gray)
-	cv2.imshow('histy',histy)
-	cv2.imshow('histx',histx)
-	cv2.imshow('thresh',thresh)
-	cv2.imshow('segments',img1)
-	cv2.waitKey(1000000)
-
-
-horizontal("./ktp_ori.png",0)
+import config.default as config
+import os
+import sys
+import text_segmentation as segment
+import shutil
+
+def ocr_testing(model_name):
+
+    # Image segmentation
+    shutil.rmtree('./segment/')
+    os.makedirs('./segment/')
+    segment.horizontal("./ktp_ori.png",0)
+
+    data_train_val_dir = 'segment'
+    data_set = imgloader.get_test_dataset(data_train_val_dir)
+
+    y = tf.nn.softmax(model.logits)
+
+    # Cross Entropy and accuracy
+    cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=model.logits, labels=model.y_)
+    loss = tf.reduce_mean(cross_entropy)
+
+    train_step = tf.train.AdamOptimizer(1e-4).minimize(loss)
+    correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(model.y_, 1))
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+    prediction = tf.argmax(y,1)
+    label = tf.argmax(model.y_, 1)
+    label_map = imgloader.get_classes("characters")
+
+    #test_data = imgloader.read_data(imgval_list, config.image_size)
+    saver = tf.train.Saver()
+
+    with tf.Session() as sess:
+        if os.path.isfile('model/' + model_name + ".meta"):
+            saver = tf.train.import_meta_graph('model/' + model_name + ".meta")
+            saver.restore(sess, tf.train.latest_checkpoint('model/'))
+
+            # Get images for each row on the KTP image and predict it
+            for i in range(len(data_set)):
+                imgval_list = data_set[i].image_paths
+                test_data = imgloader.read_data(imgval_list, config.image_size)
+                predictions = sess.run(prediction, feed_dict={model.x:test_data})
+                for i in range(len(predictions)):
+                    print(label_map[predictions[i]], end = '')
+                print('')
+
+if __name__ == "__main__":
+    ocr_testing(sys.argv[1])

@@ -2,6 +2,8 @@ import os
 from scipy import misc
 import numpy as np
 import sys
+import cv2
+import re
 
 def get_image_and_labels(dataset, portion_train, portion_val):
     imgtrn = []
@@ -20,6 +22,11 @@ def get_image_and_labels(dataset, portion_train, portion_val):
 
     return imgtrn, lbltrn, imgval, lblval
 
+def get_classes(path):
+    classes = os.listdir(path)
+    classes.sort()
+    return classes
+
 def prehiten(x):
     mean = np.mean(x)
     std = np.std(x)
@@ -33,7 +40,10 @@ def read_data(image_list, image_size):
     for path in image_list:
         im = misc.imread(path)
         im = misc.imresize(im, (image_size, image_size))
-        image_batch.append(prewhiten(im))
+        im = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
+        im = prewhiten(im)
+        im = np.reshape(im, (image_size, image_size,1))
+        image_batch.append(im)
 
     return image_batch
 
@@ -67,6 +77,26 @@ def get_dataset(paths):
                 image_paths = [os.path.join(chardir, img) for img in images]
                 dataset.append(ImageClass(class_name, image_paths))
 
+    return dataset
+
+def get_test_dataset(paths):
+    dataset = []
+
+    for path in paths.split(':'):
+        path_exp = os.path.expanduser(path)
+        classes = os.listdir(path_exp)
+        classes.sort(key=float)
+        nrof_classes = len(classes)
+        for i in range(nrof_classes):
+            class_name = classes[i]
+            chardir = os.path.join(path_exp, class_name)
+            if os.path.isdir(chardir):
+                images = os.listdir(chardir)
+                for i in range(len(images)):
+                    images[i] = re.sub('[^0-9]','',images[i])
+                images.sort(key=float)
+                image_paths = [os.path.join(chardir, img + ".png") for img in images]
+                dataset.append(ImageClass(class_name, image_paths))
     return dataset
 
 def prewhiten(x):

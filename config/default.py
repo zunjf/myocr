@@ -2,7 +2,7 @@ import tensorflow as tf
 
 # Configuration
 n_classes = 64
-epochs = 1
+epochs = 2
 batch_size = 16
 image_size = 10
 dropout = 0.75
@@ -18,7 +18,7 @@ def bias_variable(shape):
 # Store layers weight & bias
 weights = {
            # 5x5, 3 input (channel), 32 outputs
-           'wc1' : weight_variable([5,5,3,32]),#tf.Variable(tf.random_normal([5,5,3,32])),
+           'wc1' : weight_variable([5,5,1,32]),#tf.Variable(tf.random_normal([5,5,3,32])),
 
            # 5x5 32 input (channel), 64 outputs
            'wc2' : weight_variable([5,5,32,64]),#tf.Variable(tf.random_normal([5,5,32,64])),
