@@ -13,7 +13,7 @@ def ocr_testing(model_name):
     # Image segmentation
     shutil.rmtree('./segment/')
     os.makedirs('./segment/')
-    segment.horizontal("./ktp_ori.png",0)
+    segment.horizontal("./sample.png",0)
 
     data_train_val_dir = 'segment'
     data_set = imgloader.get_test_dataset(data_train_val_dir)
